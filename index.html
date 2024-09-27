@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCA Project Prioritization Tool</title>
+    <style>
+        /* Simple styles to make the layout clear */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1em;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #444;
+        }
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 1em;
+            cursor: pointer;
+        }
+        nav button.active {
+            background-color: #555;
+        }
+        section {
+            display: none;
+            padding: 1em;
+        }
+        section.active {
+            display: block;
+        }
+        /* Style for each project item */
+.project-item {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* Style for each criteria group */
+.criteria-group {
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+/* Labels and inputs on separate lines */
+.criteria-group label,
+.criteria-group input {
+    display: block;
+    margin: 5px 0;
+}
+
+/* Add some padding to inputs */
+input[type="text"],
+input[type="number"],
+input[type="range"] {
+    padding: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Add some spacing for the priority controls */
+.priority-control {
+    margin-bottom: 15px;
+}
+
+/* Style for locked sliders */
+.priority-control input[type="checkbox"] {
+    margin-left: 10px;
+}
+
+label {
+    font-weight: bold;
+}
+        /* Style for the entire criteria list container */
+.criteria-list {
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Style for individual criteria items */
+.criteria-item {
+    margin-bottom: 10px;
+    padding: 8px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Label and input on separate lines */
+.criteria-item label,
+.criteria-item input,
+.criteria-item select {
+    display: block;
+    margin: 5px 0;
+}
+
+/* Improve the appearance of the input and select elements */
+.criteria-item input[type="text"],
+.criteria-item select {
+    padding: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Add some space for delete button */
+.criteria-item button {
+    margin-top: 10px;
+}
+
+/* Optional: Add hover effect to criteria items */
+.criteria-item:hover {
+    background-color: #f0f8ff;
+    border-color: #b3d4fc;
+}
+        /* Container for the priority controls */
+#priority-controls {
+    padding: 15px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Individual priority control for each slider */
+.priority-control {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Style for labels and sliders within priority controls */
+.priority-control label {
+    font-weight: bold;
+    margin-right: 10px;
+    flex-grow: 1;
+}
+
+/* Style for the slider inputs */
+.priority-control input[type="range"] {
+    width: 60%;
+    margin-right: 10px;
+}
+
+/* Style for the lock checkbox */
+.priority-control input[type="checkbox"] {
+    margin-left: 10px;
+}
+
+/* Container for the project rankings */
+#project-rankings {
+    padding: 15px;
+    margin-top: 20px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Individual project ranking */
+.project-ranking {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Optional hover effect for project rankings */
+.project-ranking:hover {
+    background-color: #f0f8ff;
+    border-color: #b3d4fc;
+}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MCA Project Prioritization Tool</h1>
+    </header>
+
+    <nav>
+        <button data-tab="criteria" class="active">Criteria</button>
+        <button data-tab="projects">Projects</button>
+        <button data-tab="priorities">Priorities</button>
+    </nav>
+
+    <section id="criteria" class="active">
+        <h2>Criteria Tab</h2>
+        <p>Add and edit your criteria here.</p>
+        <button id="add-criteria">Add New Criteria</button>
+        <div id="criteria-list">
+            <!-- Dynamic content will be inserted here -->
+        </div>
+    </section>
+
+    <section id="projects">
+        <h2>Projects Tab</h2>
+        <p>Enter your projects and their scores here.</p>
+        <button id="add-project">Add New Project</button>
+        <div id="project-list">
+            <!-- Dynamic content will be inserted here -->
+        </div>
+    </section>
+
+    <section id="priorities">
+        <h2>Priorities Tab</h2>
+<p>Adjust the priorities (weightings) of the criteria here.</p>
+    <div id="priority-controls"></div>
+    <h3>Project Rankings</h3>
+    <div id="project-rankings">
+        <!-- Ranked projects will be displayed here -->
+    </div>
+    </section>
+
+    <script>
+        const defaultCriteria=[{"id":"criteria_1727402063404_431","name":"Cost","direction":"Ascending"},{"id":"criteria_1727404124342_773","name":"Benefit","direction":"Descending"},{"id":"criteria_1727412406243_597","name":"Sustainability","direction":"Descending"},{"id":"criteria_1727413090988_38","name":"Support","direction":"Descending"}];
+        const defaultProjects=[{"id":"project_1727402095180_829","name":"Project 1","criteriaValues":{"criteria_1727402063404_431":25000,"criteria_1727404124342_773":100,"criteria_1727412406243_597":30,"criteria_1727413090988_38":20},"scores":{"criteria_1727402063404_431":100,"criteria_1727404124342_773":100,"criteria_1727412406243_597":-100,"criteria_1727413090988_38":100}},{"id":"project_1727402513623_870","name":"Project 2","criteriaValues":{"criteria_1727402063404_431":50000,"criteria_1727404124342_773":81,"criteria_1727412406243_597":50,"criteria_1727413090988_38":10},"scores":{"criteria_1727402063404_431":0,"criteria_1727404124342_773":-100,"criteria_1727412406243_597":-42.85714285714286,"criteria_1727413090988_38":4.761904761904773}},{"id":"project_1727403088347_265","name":"Project 3","criteriaValues":{"criteria_1727402063404_431":75000,"criteria_1727404124342_773":90,"criteria_1727412406243_597":100,"criteria_1727413090988_38":-10},"scores":{"criteria_1727402063404_431":-100,"criteria_1727404124342_773":-5.26315789473685,"criteria_1727412406243_597":100,"criteria_1727413090988_38":-100}}];
+        // Function to initialize default data if not already saved
+function initializeDefaultData() {
+    if (!loadFromLocalStorage("criteriaList")) {
+        saveToLocalStorage("criteriaList", defaultCriteria);
+    }
+
+    if (!loadFromLocalStorage("projectList")) {
+        saveToLocalStorage("projectList", defaultProjects);
+    }
+}
+        // Basic tab-switching functionality
+        const tabs = document.querySelectorAll('nav button');
+        const sections = document.querySelectorAll('section');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove 'active' class from all tabs
+                tabs.forEach(t => t.classList.remove('active'));
+                // Add 'active' class to the clicked tab
+                this.classList.add('active');
+                
+                // Hide all sections
+                sections.forEach(section => section.classList.remove('active'));
+                // Show the relevant section
+                const activeSection = document.getElementById(this.dataset.tab);
+                activeSection.classList.add('active');
+            });
+        });
+        // Utility to save data to localStorage
+        function saveToLocalStorage(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (error) {
+                console.error("Failed to save data to localStorage", error);
+            }
+        }
+
+        // Utility to retrieve data from localStorage
+        function loadFromLocalStorage(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (error) {
+                console.error("Failed to load data from localStorage", error);
+                return null;
+            }
+        }
+
+        // Utility to generate a unique ID (for criteria, projects, etc.)
+        function generateUniqueId(prefix = "id") {
+            return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        }
+
+        // Utility to clear localStorage (for debugging or resetting the app)
+        function clearLocalStorage() {
+            localStorage.clear();
+        }
+
+        // Utility to create and append an HTML element with attributes
+        function createElement(type, attributes = {}, parent = null) {
+            const element = document.createElement(type);
+            for (const [key, value] of Object.entries(attributes)) {
+                element.setAttribute(key, value);
+            }
+            if (parent) {
+                parent.appendChild(element);
+            }
+            return element;
+        }
+
+// Function to initialize the Criteria tab
+function initCriteriaTab() {
+    const criteriaList = loadFromLocalStorage("criteriaList") || [];
+    renderCriteriaList(criteriaList);
+
+    // Add new criteria button event
+    document.getElementById("add-criteria").addEventListener("click", function() {
+        const newCriteria = { 
+            id: generateUniqueId("criteria"), 
+            name: "New Criteria", 
+            direction: "Descending" // Default direction
+        };
+        criteriaList.push(newCriteria);
+        saveToLocalStorage("criteriaList", criteriaList);
+        renderCriteriaList(criteriaList);
+        renderProjectList(loadFromLocalStorage("projectList"), criteriaList);
+    });
+}
+
+// Function to render the criteria list
+function renderCriteriaList(criteriaList) {
+    const criteriaContainer = document.getElementById("criteria-list");
+    criteriaContainer.innerHTML = ''; // Clear existing content
+
+    criteriaList.forEach((criteria) => {
+        const criteriaDiv = createElement("div", { class: "criteria-item" }, criteriaContainer);
+
+        // Criteria name input
+        const nameInput = createElement("input", { type: "text", value: criteria.name }, criteriaDiv);
+        nameInput.addEventListener("input", function() {
+            criteria.name = this.value;
+            saveToLocalStorage("criteriaList", criteriaList);
+            renderProjectList(loadFromLocalStorage("projectList"), criteriaList);
+            // Re-render Priorities tab
+            renderPriorityControls(criteriaList, loadFromLocalStorage("weightings"));
+            renderProjectRankings(loadFromLocalStorage("projectList"), criteriaList, loadFromLocalStorage("weightings"));
+        });
+
+        // Direction selection (Ascending or Descending)
+        const directionSelect = createElement("select", {}, criteriaDiv);
+        ["Ascending", "Descending"].forEach(direction => {
+            const option = createElement("option", { value: direction }, directionSelect);
+            option.innerText = direction=="Ascending"?"Smaller is better":"Bigger is better";
+            if (criteria.direction === direction) option.selected = true;
+        });
+        directionSelect.addEventListener("change", function() {
+            criteria.direction = this.value;
+            saveToLocalStorage("criteriaList", criteriaList);
+            renderProjectList(loadFromLocalStorage("projectList"), criteriaList);
+            // Re-render Priorities tab
+            renderPriorityControls(criteriaList, loadFromLocalStorage("weightings"));
+            renderProjectRankings(loadFromLocalStorage("projectList"), criteriaList, loadFromLocalStorage("weightings"));
+        });
+
+        // Button to delete criteria
+        const deleteButton = createElement("button", {}, criteriaDiv);
+        deleteButton.innerText = "Delete Criteria";
+        deleteButton.addEventListener("click", function() {
+            const index = criteriaList.indexOf(criteria);
+            if (index !== -1) {
+                criteriaList.splice(index, 1);
+                saveToLocalStorage("criteriaList", criteriaList);
+                renderCriteriaList(criteriaList);
+                renderProjectList(loadFromLocalStorage("projectList"), criteriaList);
+                // Re-render Priorities tab
+                renderPriorityControls(criteriaList, loadFromLocalStorage("weightings"));
+                renderProjectRankings(loadFromLocalStorage("projectList"), criteriaList, loadFromLocalStorage("weightings"));
+            }
+        });
+    });
+}
+
+// Initialize the Criteria tab when the page loads
+document.addEventListener("DOMContentLoaded", function() {
+    initializeDefaultData();
+    initCriteriaTab();
+    initProjectsTab();
+    initPrioritiesTab();
+});
+
+// Function to initialize the Projects tab
+function initProjectsTab() {
+    const criteriaList = loadFromLocalStorage("criteriaList") || [];
+    const projectList = loadFromLocalStorage("projectList") || [];
+    renderProjectList(projectList, criteriaList);
+    renderProjectScores(projectList, criteriaList); // Initial score rendering
+
+    // Add new project button event
+    document.getElementById("add-project").addEventListener("click", function() {
+        const newProject = { 
+            id: generateUniqueId("project"), 
+            name: "New Project", 
+            criteriaValues: {}, 
+            scores: {} // To store calculated relative values for each criteria
+        };
+
+        // Initialize criteria values for this project
+        criteriaList.forEach(criteria => {
+            newProject.criteriaValues[criteria.id] = 0; // Default to 0 for each criteria
+            newProject.scores[criteria.id] = 0; // Default score for each criteria
+        });
+
+        projectList.push(newProject);
+        saveToLocalStorage("projectList", projectList);
+        renderProjectList(projectList, criteriaList); // Render new project inputs
+        renderProjectScores(projectList, criteriaList); // Recalculate and render scores
+    });
+}
+
+// Function to render the project input list (with a placeholder for scores)
+function renderProjectList(projectList, criteriaList) {
+    const projectContainer = document.getElementById("project-list");
+    projectContainer.innerHTML = ''; // Clear existing content
+
+    projectList.forEach((project) => {
+        const projectDiv = createElement("div", { class: "project-item" }, projectContainer);
+
+        // Project name input
+        const nameInput = createElement("input", { type: "text", value: project.name }, projectDiv);
+        nameInput.addEventListener("input", function() {
+            project.name = this.value;
+            saveToLocalStorage("projectList", projectList);
+        });
+
+        // Display input fields for each criteria
+        criteriaList.forEach((criteria) => {
+            const criteriaDiv = createElement("div", { class: "criteria-group" }, projectDiv);
+            const criteriaLabel = createElement("label", {}, criteriaDiv);
+            if(!project.scores[criteria.id]) { project.scores[criteria.id]=0; project.criteriaValues[criteria.id]=0; }
+            criteriaLabel.innerText = `${criteria.name} Score: ${project.scores[criteria.id].toFixed(2)}`;
+
+            // Input for criteria value (number)
+            const criteriaValueInput = createElement("input", { 
+                type: "number", 
+                value: project.criteriaValues[criteria.id],
+                'data-project-id': project.id,
+                'data-criteria-id': criteria.id
+            }, criteriaDiv);
+
+            // Update project values in localStorage when the input changes
+            criteriaValueInput.addEventListener("input", function() {
+                project.criteriaValues[criteria.id] = Number(this.value);
+                saveToLocalStorage("projectList", projectList);
+                renderProjectScores(projectList, criteriaList); // Re-render only scores
+            });
+        });
+    });
+}
+
+// Function to calculate relative values for each project based on criteria
+function renderProjectScores(projectList, criteriaList) {
+    // Calculate relative values for each criteria
+    calculateRelativeValues(projectList, criteriaList);
+
+    // After calculation, update the DOM with the new scores
+    projectList.forEach((project) => {
+        criteriaList.forEach((criteria) => {
+            const criteriaScoreElement = document.querySelector(
+                `[data-project-id="${project.id}"][data-criteria-id="${criteria.id}"]`
+            );
+
+            if (criteriaScoreElement) {
+                criteriaScoreElement.previousSibling.innerText = `${criteria.name} Score: ${project.scores[criteria.id].toFixed(2)}`;
+            }
+        });
+    });
+}
+
+// Function to calculate relative project values for each criteria
+function calculateRelativeValues(projectList, criteriaList) {
+    criteriaList.forEach(criteria => {
+        const values = projectList.map(project => project.criteriaValues[criteria.id]);
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+
+        projectList.forEach(project => {
+            const value = project.criteriaValues[criteria.id];
+
+            // Handle case where all values are the same
+            if (max === min) {
+                project.scores[criteria.id] = 0; // All projects are equal, assign 0
+            } else {
+                let relativeValue;
+                if (criteria.direction === "Ascending") {
+                    relativeValue = ((max - value) / (max - min)) * 200 - 100;
+                } else {
+                    relativeValue = ((value - min) / (max - min)) * 200 - 100;
+                }
+                project.scores[criteria.id] = relativeValue;
+            }
+        });
+    });
+}
+
+// Function to initialize the Priorities tab
+function initPrioritiesTab() {
+    const criteriaList = loadFromLocalStorage("criteriaList") || [];
+    const projectList = loadFromLocalStorage("projectList") || [];
+    const weightings = loadFromLocalStorage("weightings") || initializeWeightings(criteriaList);
+    
+    renderPriorityControls(criteriaList, weightings);
+    renderProjectRankings(projectList, criteriaList, weightings);
+}
+
+// Initialize default weightings for criteria
+function initializeWeightings(criteriaList) {
+    const weightings = {};
+    const defaultWeight = 1 / criteriaList.length; // Default to equal weighting
+    criteriaList.forEach(criteria => {
+        weightings[criteria.id] = defaultWeight;
+    });
+    saveToLocalStorage("weightings", weightings);
+    return weightings;
+}
+
+// Render sliders for adjusting priorities (weightings) of criteria
+function renderPriorityControls(criteriaList, weightings) {
+    const priorityContainer = document.getElementById("priority-controls");
+
+    // Render only if it doesn't exist already
+    if (!priorityContainer.hasChildNodes()) {
+        criteriaList.forEach(criteria => {
+            const controlDiv = createElement("div", { class: "priority-control" }, priorityContainer);
+
+            // Label for criteria
+            const label = createElement("label", {
+                id: `label-${criteria.id}`
+            }, controlDiv);
+            label.innerText = `${criteria.name}: ${Math.round(weightings[criteria.id] * 100)}%`;
+            createElement("br", {}, controlDiv);
+
+            // Slider for adjusting weighting
+            const slider = createElement("input", {
+                type: "range",
+                min: 0,
+                max: 100,
+                value: Math.round(weightings[criteria.id] * 100),
+                'data-criteria-id': criteria.id,
+                class: 'priority-slider'
+            }, controlDiv);
+
+            // Lock checkbox
+            const lockCheckbox = createElement("input", {
+                type: "checkbox",
+                'data-criteria-id': criteria.id,
+                class: 'priority-lock'
+            }, controlDiv);
+            const lockLabel = createElement("label", {}, controlDiv);
+            lockLabel.innerText = "Lock";
+
+            // Attach event listener to the slider
+            slider.addEventListener("input", function () {
+                const totalWeight = updateWeightings(criteriaList, weightings, this);
+                saveToLocalStorage("weightings", weightings);
+                updatePriorityLabel(criteria.id, weightings[criteria.id]);
+                renderProjectRankings(loadFromLocalStorage("projectList"), criteriaList, loadFromLocalStorage("weightings"));
+            });
+        });
+    }
+}
+
+// Update label text without rerendering the slider
+function updatePriorityLabel(criteriaId, weight) {
+    const label = document.getElementById(`label-${criteriaId}`);
+    if (label) {
+        label.innerText = `${label.innerText.split(":")[0]}: ${Math.round(weight * 100)}%`;
+    }
+}
+
+// Function to update weightings when a slider is moved
+function updateWeightings(criteriaList, weightings, slider) {
+    const criteriaId = slider.getAttribute('data-criteria-id');
+    const newWeight = Number(slider.value) / 100;
+
+    // Update the selected criterion's weight
+    weightings[criteriaId] = newWeight;
+
+    // Get a list of locked sliders
+    const lockedCriteria = [];
+    document.querySelectorAll('.priority-lock').forEach(lock => {
+        if (lock.checked) {
+            lockedCriteria.push(lock.getAttribute('data-criteria-id'));
+        }
+    });
+
+    // Normalize weights only for unlocked sliders
+    const totalUnlockedWeight = Object.keys(weightings)
+        .filter(id => !lockedCriteria.includes(id))
+        .reduce((sum, id) => sum + weightings[id], 0);
+
+    criteriaList.forEach(criteria => {
+        if (!lockedCriteria.includes(criteria.id)) {
+            weightings[criteria.id] = (weightings[criteria.id] / totalUnlockedWeight);
+        }
+    });
+
+    // Update all sliders to reflect normalized weightings
+    updateSliders(criteriaList, weightings);
+
+    return totalUnlockedWeight;
+}
+
+// Function to update all slider values after normalization
+function updateSliders(criteriaList, weightings) {
+    criteriaList.forEach(criteria => {
+        const slider = document.querySelector(`input.priority-slider[data-criteria-id="${criteria.id}"]`);
+        if (slider) {
+            slider.value = Math.round(weightings[criteria.id] * 100);
+        }
+        // Update the label associated with the slider
+        updatePriorityLabel(criteria.id, weightings[criteria.id]);
+    });
+}
+
+// Render project rankings based on weighted scores
+function renderProjectRankings(projectList, criteriaList, weightings) {
+    const rankingsContainer = document.getElementById("project-rankings");
+    rankingsContainer.innerHTML = ''; // Clear existing rankings
+
+    // Calculate the final weighted score for each project
+    projectList.forEach(project => {
+        project.finalScore = 0;
+        criteriaList.forEach(criteria => {
+            project.finalScore += project.scores[criteria.id] * weightings[criteria.id];
+        });
+    });
+
+    // Sort projects by final score (descending order)
+    projectList.sort((a, b) => b.finalScore - a.finalScore);
+
+    // Display sorted projects
+    projectList.forEach((project, index) => {
+        const projectDiv = createElement("div", { class: "project-ranking" }, rankingsContainer);
+        projectDiv.innerText = `${index + 1}. ${project.name}: ${project.finalScore.toFixed(2)}`;
+    });
+}
+    </script>
+</body>
+</html>
